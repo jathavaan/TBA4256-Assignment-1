@@ -51,7 +51,3 @@ class Handler(IHandler):
         path: str = os.path.join(Config.OUTPUT_DIR.value, filename)
         o3d.io.write_point_cloud(filename=path, pointcloud=point_cloud)
         print(f"Saved point cloud to {path}")
-
-    @staticmethod
-    def display(point_cloud: o3d.geometry.PointCloud) -> None:
-        o3d.visualization.draw_geometries([point_cloud])

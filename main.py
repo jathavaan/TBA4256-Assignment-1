@@ -1,8 +1,9 @@
 import open3d as o3d
 
-from src import Config
 from src.enums import Files
 from src.features.point_cloud_handler import Handler
+from src.features.display import Visualize
+from src.features.pre_process import Reduce
 
 
 class Main:
@@ -12,7 +13,8 @@ class Main:
             Files.OFF_GROUND_POINTS
         )
 
-        Handler.display(point_cloud=point_cloud)
+        point_cloud = Reduce.voxel_downsample(point_cloud=point_cloud)
+        Visualize.display(point_cloud=point_cloud)
 
 
 if __name__ == "__main__":

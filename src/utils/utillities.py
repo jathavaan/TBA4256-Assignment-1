@@ -1,5 +1,6 @@
 import numpy as np
 import open3d as o3d
+import pandas as pd
 
 
 class Utillities:
@@ -9,5 +10,19 @@ class Utillities:
     ) -> tuple[np.ndarray, np.ndarray]:
         XYZ: np.ndarray = np.asarray(point_cloud.points)
         RGB: np.ndarray = np.asarray(point_cloud.colors)
+
+        return XYZ, RGB
+
+    @staticmethod
+    def dataframe_extract_XYZ_and_RGB(
+        dataframe: pd.DataFrame
+    ) -> None:
+        XYZ: np.ndarray = np.array(
+            dataframe[["X", "Y", "Z"]],
+        )
+
+        RGB: np.ndarray = np.array(
+            dataframe[["R", "G", "B"]],
+        )
 
         return XYZ, RGB

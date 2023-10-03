@@ -8,8 +8,8 @@ class PreProcess(Enum):
 
 
 class DBSCAN(Enum):
-    EPS: float = 0.25
-    MIN_POINTS: int = 30
+    EPS: float = 0.75
+    MIN_POINTS: int = 15
 
 
 class RANSAC(Enum):

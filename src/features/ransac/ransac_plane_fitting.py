@@ -2,20 +2,20 @@ import math
 
 import numpy as np
 import open3d as o3d
+import pandas as pd
 from tqdm import tqdm
 
 from ...enums import DBSCAN
 from ...enums import RANSAC as RANSACParameter
-from ...utils import Timer
+from ...utils import Conversion, Timer, Utillities
 from ..cluster import PointCloudDBSCAN
 from ..display import Visualize
 
 
 class RANSACPlaneFitting:
-    __point_cloud: o3d.geometry.PointCloud = None
-    __dbscan: 'PointCloudDBSCAN' = None
-    __roof_point_cloud: o3d.geometry.PointCloud = None
-    __non_roof_point_cloud: o3d.geometry.PointCloud = None
+    __point_cloud: o3d.geometry.PointCloud
+    __dbscan: 'PointCloudDBSCAN'
+    __roofs: list[o3d.geometry.PointCloud]
 
     def __init__(
         self,
@@ -37,71 +37,57 @@ class RANSACPlaneFitting:
     def dbscan(self) -> 'PointCloudDBSCAN':
         return self.__dbscan
 
+    @property
+    def roofs(self) -> list[o3d.geometry.PointCloud]:
+        return self.__roofs
+
+    @roofs.setter
+    def roofs(self, roofs: list[o3d.geometry.PointCloud]) -> None:
+        self.__roofs = roofs
+
     @dbscan.setter
     def dbscan(self, dbscan: 'PointCloudDBSCAN') -> None:
         self.__dbscan = dbscan
-
-    @property
-    def roof_point_cloud(self) -> o3d.geometry.PointCloud:
-        return self.__roof_point_cloud
-
-    @roof_point_cloud.setter
-    def roof_point_cloud(self, roof_point_cloud: o3d.geometry.PointCloud) -> None:
-        self.__roof_point_cloud = roof_point_cloud
-
-    @property
-    def non_roof_point_cloud(self) -> o3d.geometry.PointCloud:
-        return self.__non_roof_point_cloud
-
-    @non_roof_point_cloud.setter
-    def non_roof_point_cloud(self, non_roof_point_cloud: o3d.geometry.PointCloud) -> None:
-        self.__non_roof_point_cloud = non_roof_point_cloud
 
     def find_planes(
         self,
         point_cloud: o3d.geometry.PointCloud
     ) -> list[int]:
-        inliers: list[int] = []
         point_cloud_size: int = len(point_cloud.points)
+        colored_point_clouds: list[o3d.geometry.PointCloud] = []
 
         if point_cloud_size < RANSACParameter.SAMPLE_SIZE.value:
-            return inliers
+            return colored_point_clouds
 
         max_inlier_ratio: float = 0.0
         for _ in range(RANSACParameter.RANSAC_ITERATION_LIMIT.value):
+            if len(point_cloud.points) < RANSACParameter.SAMPLE_SIZE.value:
+                break
+
             distance_function, ransac_inliers = RANSACPlaneFitting.__ransac_plane_fitting(
                 point_cloud=point_cloud
             )
-
-            # outlier_point_cloud = point_cloud.select_by_index(
-            #     inliers,
-            #     invert=True
-            # )
 
             inlier_ratio: float = len(ransac_inliers) / point_cloud_size
             if inlier_ratio > max_inlier_ratio:
                 max_inlier_ratio = inlier_ratio
 
-            if inlier_ratio > RANSACParameter.PLANE_INLIER_RATIO_LIMIT.value:
-                for index in ransac_inliers:
-                    inliers.append(index)
+            if inlier_ratio > RANSACParameter.PLANE_INLIER_RATIO_LIMIT.value and RANSACParameter.PLANE_POINT_COUNT_THRESHOLD.value < len(ransac_inliers):
+                plane_point_cloud: o3d.geometry.PointCloud = point_cloud.select_by_index(
+                    ransac_inliers
+                )
 
-                # Visualize.display(point_cloud.select_by_index(inliers))
+                plane_point_cloud.paint_uniform_color(
+                    RANSACParameter.PLANE_COLOR.value
+                )
 
-            continue
+                colored_point_clouds.append(plane_point_cloud)
 
-            outlier_points: np.ndarray = np.asarray(outlier_point_cloud.points)
-            x: np.ndarray = outlier_points[:, 0]
-            y: np.ndarray = outlier_points[:, 1]
-            z: np.ndarray = outlier_points[:, 2]
+                point_cloud: o3d.geometry.PointCloud = point_cloud.select_by_index(
+                    ransac_inliers, invert=True
+                )
 
-            distances: np.ndarray = distance_function(x, y, z)
-
-            if distances.std() < RANSACParameter.STANDARD_DEVIATION_THRESHOLD.value:
-                for index in ransac_inliers:
-                    inliers.append(index)
-
-        return inliers
+        return colored_point_clouds
 
     def run(self) -> None:
         print(
@@ -114,14 +100,14 @@ class RANSACPlaneFitting:
             - Plane Inlier Ratio Limit: {RANSACParameter.PLANE_INLIER_RATIO_LIMIT.value}
             """
         )
+
         label_indexes: dict[int, np.ndarray] = self.__extract_label_indexes(
             self.dbscan.labels
         )
 
-        roof_indexes: list[int] = []
-
         labels: list[int] = list(label_indexes.keys())
         label_indexes: list[np.ndarray] = list(label_indexes.values())
+        roofs: list[o3d.geometry.PointCloud] = []
 
         for i in tqdm(
             range(len(labels)),
@@ -138,32 +124,14 @@ class RANSACPlaneFitting:
                 indexes
             )
 
-            inliers_indexes: list[int] = self.find_planes(
+            inlier_point_clouds: list[o3d.geometry.PointCloud] = self.find_planes(
                 point_cloud=clustered_point_cloud
             )
 
-            for index in inliers_indexes:
-                roof_indexes.append(index)
+            for inlier_point_cloud in inlier_point_clouds:
+                roofs.append(inlier_point_cloud)
 
-        roof_indexes: np.ndarray = np.unique(np.asarray(roof_indexes))
-        ratio: float = len(roof_indexes) / len(self.point_cloud.points)
-        print(
-            f"Roof point cloud has {ratio * 100}% of the original point cloud"
-        )
-
-        roof_pcd: o3d.geometry.PointCloud = self.point_cloud.select_by_index(
-            roof_indexes
-        )
-
-        roof_pcd.paint_uniform_color(RANSACParameter.PLANE_COLOR.value)
-
-        non_roof_pcd: o3d.geometry.PointCloud = self.point_cloud.select_by_index(
-            roof_indexes,
-            invert=True
-        )
-
-        self.roof_point_cloud = roof_pcd
-        self.non_roof_point_cloud = non_roof_pcd
+        self.roofs = roofs
 
     @staticmethod
     def __extract_label_indexes(labels: np.ndarray) -> dict[int, np.ndarray]:

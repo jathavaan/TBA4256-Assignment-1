@@ -1,10 +1,11 @@
-from abc import ABC, abstractmethod
 import os
 import time
+from abc import ABC, abstractmethod
 from turtle import pd
+
+import laspy
 import numpy as np
 import open3d as o3d
-import laspy
 from laspy.lasdata import LasData
 
 from ... import Config
@@ -46,8 +47,12 @@ class Handler(IHandler):
         return point_cloud
 
     @staticmethod
-    def save(point_cloud: o3d.geometry.PointCloud) -> None:
-        filename: str = time.strftime("%Y%m%d-%H%M%S") + ".las"
+    def save(*point_clouds: o3d.geometry.PointCloud) -> None:
+        point_cloud: o3d.geometry.PointCloud = o3d.geometry.PointCloud()
+        for pcd in point_clouds:
+            point_cloud += pcd
+
+        filename: str = time.strftime("%Y%m%d-%H%M%S") + ".ply"
         path: str = os.path.join(Config.OUTPUT_DIR.value, filename)
         o3d.io.write_point_cloud(filename=path, pointcloud=point_cloud)
         print(f"Saved point cloud to {path}")

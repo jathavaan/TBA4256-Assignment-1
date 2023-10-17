@@ -145,6 +145,7 @@ class RANSACPlaneFitting:
             for index in inliers_indexes:
                 roof_indexes.append(index)
 
+        roof_indexes: np.ndarray = np.unique(np.asarray(roof_indexes))
         ratio: float = len(roof_indexes) / len(self.point_cloud.points)
         print(
             f"Roof point cloud has {ratio * 100}% of the original point cloud"

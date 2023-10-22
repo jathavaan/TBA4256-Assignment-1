@@ -4,7 +4,7 @@ import open3d as o3d
 import pandas as pd
 
 from ...enums import DBSCAN
-from ...utils import Utillities
+from ...utils import Utilities
 
 
 class PointCloudDBSCAN:
@@ -61,7 +61,7 @@ class PointCloudDBSCAN:
         self.__label_dataframe()
 
     def __label_dataframe(self) -> None:
-        XYZ, RGB = Utillities.point_cloud_extract_XYZ_and_RGB(
+        XYZ, RGB = Utilities.point_cloud_extract_XYZ_and_RGB(
             point_cloud=self.point_cloud
         )
 

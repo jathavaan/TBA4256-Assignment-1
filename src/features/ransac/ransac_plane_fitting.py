@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from ...enums import DBSCAN
 from ...enums import RANSAC as RANSACParameter
-from ...utils import Conversion, Timer, Utillities
+from ...utils import Conversion, Timer, Utilities
 from ..cluster import PointCloudDBSCAN
 from ..display import Visualize
 

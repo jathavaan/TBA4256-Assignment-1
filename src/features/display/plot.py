@@ -3,13 +3,13 @@ import open3d as o3d
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ...utils import Utillities
+from ...utils import Utilities
 
 
 class Plot:
     @staticmethod
     def point_cloud(point_cloud: o3d.geometry.PointCloud) -> None:
-        XYZ, RGB = Utillities.point_cloud_extract_XYZ_and_RGB(
+        XYZ, RGB = Utilities.point_cloud_extract_XYZ_and_RGB(
             point_cloud=point_cloud
         )  # Datatype is np.ndarray
 

@@ -1,2 +1,2 @@
 from .files import Files
-from .parameters import PreProcess, DBSCAN, RANSAC
+from .parameters import *

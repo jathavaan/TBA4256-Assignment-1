@@ -6,3 +6,4 @@ class Files(Enum):
     UNPROCESSED_OFF_GROUND_POINTS = 'unprocessed_off_ground_points.las'
     OFF_GROUND_POINTS = 'off_ground_points.las'
     GROUND_POINTS = 'ground_points.las'
+    TREE_POINT_CLOUD: str = 'tree_point_cloud.las'

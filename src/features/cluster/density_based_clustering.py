@@ -5,7 +5,7 @@ from sklearn.cluster import DBSCAN
 
 from ...enums import DBSCAN as DBScanParameters
 from ...enums import PreProcess
-from ...utils import Conversion, Utillities
+from ...utils import Conversion, Utilities
 from ..display import Visualize
 
 
@@ -67,7 +67,7 @@ class DensityBasedClustering:
         self.clustered_point_clouds.append(clustered_point_cloud)
 
     def cluster(self, point_cloud: o3d.geometry.PointCloud) -> None:
-        XYZ, RGB = Utillities.point_cloud_extract_XYZ_and_RGB(
+        XYZ, RGB = Utilities.point_cloud_extract_XYZ_and_RGB(
             point_cloud
         )
 

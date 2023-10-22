@@ -3,13 +3,13 @@ import open3d as o3d
 import pandas as pd
 from laspy.lasdata import LasData
 
-from . import Utillities
+from .utilities import Utilities
 
 
 class Conversion:
     @staticmethod
     def dataframe_to_point_cloud(dataframe: pd.DataFrame) -> o3d.geometry.PointCloud:
-        XYZ, RGB = Utillities.dataframe_extract_XYZ_and_RGB(dataframe)
+        XYZ, RGB = Utilities.dataframe_extract_XYZ_and_RGB(dataframe)
 
         point_cloud: o3d.geometry.PointCloud = o3d.geometry.PointCloud()
         point_cloud.points = o3d.utility.Vector3dVector(XYZ)

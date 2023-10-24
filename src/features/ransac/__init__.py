@@ -1,1 +1,2 @@
 from .ransac_plane_fitting import RANSACPlaneFitting
+from .ransac_cylinder_fitting import RANSACCylinderFitting

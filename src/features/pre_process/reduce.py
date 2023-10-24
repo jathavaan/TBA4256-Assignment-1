@@ -26,3 +26,16 @@ class Reduce:
         )
 
         return downsampled_point_cloud
+
+    @staticmethod
+    def statistical_outlier_removal(
+            point_cloud: o3d.geometry.PointCloud,
+            nb_neighbors: int = 20,
+            std_ratio: float = .1
+    ) -> o3d.geometry.PointCloud:
+        point_cloud, _ = point_cloud.remove_statistical_outlier(
+            nb_neighbors=nb_neighbors,
+            std_ratio=std_ratio
+        )
+        return point_cloud
+

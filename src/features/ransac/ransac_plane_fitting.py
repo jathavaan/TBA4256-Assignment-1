@@ -2,14 +2,10 @@ import math
 
 import numpy as np
 import open3d as o3d
-import pandas as pd
 from tqdm import tqdm
 
-from ...enums import DBSCAN
-from ...enums import RANSAC as RANSACParameter
-from ...utils import Conversion, Timer, Utilities
 from ..cluster import PointCloudDBSCAN
-from ..display import Visualize
+from ...enums import RANSAC as RANSACParameter
 
 
 class RANSACPlaneFitting:
@@ -18,9 +14,9 @@ class RANSACPlaneFitting:
     __roofs: list[o3d.geometry.PointCloud]
 
     def __init__(
-        self,
-        point_cloud: o3d.geometry.PointCloud,
-        dbscan: 'PointCloudDBSCAN'
+            self,
+            point_cloud: o3d.geometry.PointCloud,
+            dbscan: 'PointCloudDBSCAN'
     ) -> None:
         self.point_cloud = point_cloud
         self.dbscan = dbscan
@@ -49,10 +45,10 @@ class RANSACPlaneFitting:
     def dbscan(self, dbscan: 'PointCloudDBSCAN') -> None:
         self.__dbscan = dbscan
 
+    @staticmethod
     def find_planes(
-        self,
-        point_cloud: o3d.geometry.PointCloud
-    ) -> list[int]:
+            point_cloud: o3d.geometry.PointCloud
+    ) -> list[o3d.geometry.PointCloud]:
         point_cloud_size: int = len(point_cloud.points)
         colored_point_clouds: list[o3d.geometry.PointCloud] = []
 
@@ -72,7 +68,8 @@ class RANSACPlaneFitting:
             if inlier_ratio > max_inlier_ratio:
                 max_inlier_ratio = inlier_ratio
 
-            if inlier_ratio > RANSACParameter.PLANE_INLIER_RATIO_LIMIT.value and RANSACParameter.PLANE_POINT_COUNT_THRESHOLD.value < len(ransac_inliers):
+            if inlier_ratio > RANSACParameter.INLIER_RATIO_LIMIT.value and RANSACParameter.PLANE_POINT_COUNT_THRESHOLD.value < len(
+                    ransac_inliers):
                 plane_point_cloud: o3d.geometry.PointCloud = point_cloud.select_by_index(
                     ransac_inliers
                 )
@@ -92,12 +89,12 @@ class RANSACPlaneFitting:
     def run(self) -> None:
         print(
             f"""Running RANSAC Plane Fitting with the following parameters:
-            - Plane Fitting Iteration: {RANSACParameter.PLANE_FITTING_ITERATION.value}
+            - Plane Fitting Iteration: {RANSACParameter.ITERATIONS.value}
             - Sample Size: {RANSACParameter.SAMPLE_SIZE.value}
             - Distance Threshold: {RANSACParameter.DISTANCE_THRESHOLD.value}
             - RANSAC Iteration Limit: {RANSACParameter.RANSAC_ITERATION_LIMIT.value}
             - Standard Deviation Threshold: {RANSACParameter.STANDARD_DEVIATION_THRESHOLD.value}
-            - Plane Inlier Ratio Limit: {RANSACParameter.PLANE_INLIER_RATIO_LIMIT.value}
+            - Plane Inlier Ratio Limit: {RANSACParameter.INLIER_RATIO_LIMIT.value}
             """
         )
 
@@ -110,9 +107,9 @@ class RANSACPlaneFitting:
         roofs: list[o3d.geometry.PointCloud] = []
 
         for i in tqdm(
-            range(len(labels)),
-            desc="RANSAC Plane Fitting for clusters",
-            unit="cluster"
+                range(len(labels)),
+                desc="RANSAC Plane Fitting for clusters",
+                unit="cluster"
         ):
             label: int = labels[i]
             indexes: np.ndarray = label_indexes[i]
@@ -124,7 +121,7 @@ class RANSACPlaneFitting:
                 indexes
             )
 
-            inlier_point_clouds: list[o3d.geometry.PointCloud] = self.find_planes(
+            inlier_point_clouds: list[o3d.geometry.PointCloud] = RANSACPlaneFitting.find_planes(
                 point_cloud=clustered_point_cloud
             )
 
@@ -145,12 +142,12 @@ class RANSACPlaneFitting:
 
     @staticmethod
     def __ransac_plane_fitting(
-        point_cloud: o3d.geometry.PointCloud
+            point_cloud: o3d.geometry.PointCloud
     ) -> tuple['function', np.ndarray]:
         plane_model, inliers = point_cloud.segment_plane(
             distance_threshold=RANSACParameter.DISTANCE_THRESHOLD.value,
             ransac_n=RANSACParameter.SAMPLE_SIZE.value,
-            num_iterations=RANSACParameter.PLANE_FITTING_ITERATION.value
+            num_iterations=RANSACParameter.ITERATIONS.value
         )
 
         a: float = plane_model[0]
@@ -169,10 +166,10 @@ class RANSACPlaneFitting:
 
     @staticmethod
     def __point_plane_distance_function(
-        a: float,
-        b: float,
-        c: float,
-        d: float
+            a: float,
+            b: float,
+            c: float,
+            d: float
     ) -> 'function':
         return lambda x, y, z: np.divide(
             np.abs(a * x + b * y + c * z + d),

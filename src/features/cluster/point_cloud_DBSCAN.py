@@ -1,4 +1,5 @@
 from collections import Counter
+
 import numpy as np
 import open3d as o3d
 import pandas as pd
@@ -11,13 +12,22 @@ class PointCloudDBSCAN:
     __labels: np.ndarray = None
     __point_cloud: o3d.geometry.PointCloud = None
     __labled_dataframe: pd.DataFrame = None
+    eps: float
+    min_points: int
 
-    def __init__(self, point_cloud: o3d.geometry.PointCloud) -> None:
+    def __init__(
+            self,
+            point_cloud: o3d.geometry.PointCloud,
+            eps: float = DBSCAN.EPS.value,
+            min_points: int = DBSCAN.MIN_POINTS.value
+    ) -> None:
         self.labels = np.array([])
         self.point_cloud = point_cloud
         self.labeled_dataframe = pd.DataFrame(
             columns=["X", "Y", "Z", "R", "G", "B", "label"]
         )
+        self.eps = eps
+        self.min_points = min_points
 
     @property
     def labels(self) -> np.ndarray:
@@ -45,8 +55,8 @@ class PointCloudDBSCAN:
 
     def cluster(self) -> None:
         self.labels = np.array(self.point_cloud.cluster_dbscan(
-            eps=DBSCAN.EPS.value,
-            min_points=DBSCAN.MIN_POINTS.value
+            eps=self.eps,
+            min_points=self.min_points
         ))
 
         label_counts: 'Counter' = Counter(self.labels)

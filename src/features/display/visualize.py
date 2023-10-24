@@ -8,7 +8,7 @@ from ... import Config
 class Visualize:
     @staticmethod
     def display(*point_clouds: o3d.geometry.PointCloud) -> None:
-        point_count: int = sum(len(pcd.points) for pcd in point_clouds)
+        point_count: int = sum(len(pcd.points) for pcd in point_clouds if isinstance(pcd, o3d.geometry.PointCloud))
         window_name: str = f"Point Cloud with {point_count} points"
 
         o3d.visualization.draw_geometries(

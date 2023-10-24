@@ -7,3 +7,4 @@ class Files(Enum):
     OFF_GROUND_POINTS = 'off_ground_points.las'
     GROUND_POINTS = 'ground_points.las'
     TREE_POINT_CLOUD: str = 'tree_point_cloud.las'
+    TREE_POINT_CLOUD_STRICT_SOR: str = 'tree_point_cloud_strict_sor.las'
